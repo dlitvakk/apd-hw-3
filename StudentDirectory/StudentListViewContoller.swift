@@ -28,15 +28,48 @@ final class StudentListViewController: UIViewController {
             let detail = StudentDetailViewController(store: self.store, studentID: student.id)
             self.navigationController?.pushViewController(detail, animated: true)
         }
+
+        listView.onDelete = { [weak self] student in
+            guard let self else { return }
+            do {
+                try self.store.deleteStudent(id: student.id)
+            } catch {
+          
+            }
+            self.reload()
+        }
+
+        if subject == nil {
+            let add = UIBarButtonItem(
+                systemItem: .add,
+                primaryAction: UIAction { [weak self] _ in self?.presentAddForm() }
+            )
+            add.accessibilityIdentifier = "addStudentButton"
+            add.accessibilityLabel = "Add student"
+            navigationItem.rightBarButtonItem = add
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        reload()
+    }
+
+    private func reload() {
         if let subject {
             listView.students = store.students(matchingSubject: subject)
         } else {
             listView.students = store.students
         }
+    }
+
+    private func presentAddForm() {
+        let form = StudentFormViewController(title: "Add Student") { [weak self] name, age in
+            guard let self else { return }
+            try self.store.addStudent(name: name, age: age)
+            self.reload()
+        }
+        present(UINavigationController(rootViewController: form), animated: true)
     }
 }
 

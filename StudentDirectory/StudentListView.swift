@@ -7,6 +7,7 @@ final class StudentListView: UIView {
     }
 
     var onSelect: ((Student) -> Void)?
+    var onDelete: ((Student) -> Void)?
 
     private let tableView: UITableView = {
         let table = UITableView(frame: .zero, style: .plain)
@@ -52,5 +53,17 @@ extension StudentListView: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         onSelect?(students[indexPath.row])
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let student = students[indexPath.row]
+        let delete = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completion in
+            self?.onDelete?(student)
+            completion(true)
+        }
+        return UISwipeActionsConfiguration(actions: [delete])
     }
 }

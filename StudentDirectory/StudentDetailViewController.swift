@@ -28,16 +28,41 @@ final class StudentDetailViewController: UIViewController {
             let filtered = StudentListViewController(store: self.store, subject: subject)
             self.navigationController?.pushViewController(filtered, animated: true)
         }
+
+        let edit = UIBarButtonItem(
+            title: "Edit",
+            primaryAction: UIAction { [weak self] _ in self?.presentEditForm() }
+        )
+        edit.accessibilityIdentifier = "editStudentButton"
+        navigationItem.rightBarButtonItem = edit
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        refresh()
+    }
+
+    private func refresh() {
         guard let student = store.students.first(where: { $0.id == studentID }) else {
             navigationController?.popViewController(animated: false)
             return
         }
         title = student.name
         detailView.configure(with: student)
+    }
+
+    private func presentEditForm() {
+        guard let student = store.students.first(where: { $0.id == studentID }) else { return }
+        let form = StudentFormViewController(
+            title: "Edit Student",
+            name: student.name,
+            age: student.age
+        ) { [weak self] name, age in
+            guard let self else { return }
+            try self.store.updateStudent(id: self.studentID, name: name, age: age)
+            self.refresh()
+        }
+        present(UINavigationController(rootViewController: form), animated: true)
     }
 }
 

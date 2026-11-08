@@ -20,6 +20,12 @@ final class StudentListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         view.addSubview(listView)
         listView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
+        
+        listView.onSelect = { [weak self] student in
+            guard let self else { return }
+            let detail = StudentDetailViewController(store: self.store, studentID: student.id)
+            self.navigationController?.pushViewController(detail, animated: true)
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

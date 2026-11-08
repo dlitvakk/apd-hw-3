@@ -23,5 +23,12 @@ every build and test result below comes from my own local runs.
     - Revised (agent suggestion): Claude's `delegateClass` fix for the black screen did not solve it alone; the scene manifest had to be set in the Info tab.
     - Accepted: injecting the store through `init(store:)`, reusing one list controller for the full and filtered lists, and deleting through the shared store with a reload after each mutation.
 - Run in Xcode (Product → Test, scheme StudentDirectory, iPhone 17 simulator, 2026-11-08): 24 tests passed, 0 failed.
-- CI URL/status: <paste the GitHub Actions run URL and its status; a local pass is not proof CI passed>
+- CI URL/status: [GitHub Actions run URL](https://github.com/dlitvakk/apd-hw-3/actions/runs/42519074710/job/128848376899)
+  
+```
+Test Suite 'All tests' passed at 2026-11-08 20:23:32.216.
+  Executed 11 tests, with 0 failures (0 unexpected) in 212.706 (212.753) seconds
+** TEST SUCCEEDED **
+```
+
 - Known limitation or remaining risk: UI tests use `waitForExistence(timeout:)` and depend on simulator keyboard behavior; data is in memory only, so added/edited/deleted students reset on relaunch.

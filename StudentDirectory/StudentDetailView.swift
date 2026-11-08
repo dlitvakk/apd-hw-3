@@ -1,7 +1,6 @@
 import UIKit
 import SnapKit
 
-/// Displays every field of a student. It only shows data; it never touches the store.
 final class StudentDetailView: UIView {
     private let scrollView = UIScrollView()
 
@@ -31,7 +30,19 @@ final class StudentDetailView: UIView {
     private let ageLabel = StudentDetailView.makeLabel(style: .body)
     private let gradeLabel = StudentDetailView.makeLabel(style: .body)
     private let scholarshipLabel = StudentDetailView.makeLabel(style: .body)
-    private let subjectsLabel = StudentDetailView.makeLabel(style: .body)
+    private let subjectsTitleLabel = StudentDetailView.makeLabel(style: .body)
+
+    private let subjectsStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.alignment = .leading
+        stack.isLayoutMarginsRelativeArrangement = true
+        stack.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 0)
+        return stack
+    }()
+
+    var onSubjectTap: ((String) -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -44,8 +55,6 @@ final class StudentDetailView: UIView {
         fatalError("init(coder:) is not supported; build the view in code")
     }
 
-    /// Single place to change the screen's font. Rounded design here; swap for any
-    /// `UIFont` while keeping `UIFontMetrics` so text still follows Dynamic Type.
     private static func font(for style: UIFont.TextStyle) -> UIFont {
         let base = UIFont.preferredFont(forTextStyle: style)
         let descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
@@ -72,7 +81,7 @@ final class StudentDetailView: UIView {
         scrollView.addSubview(contentStack)
 
         avatarContainer.addSubview(avatarImageView)
-        [avatarContainer, nameLabel, idLabel, ageLabel, gradeLabel, scholarshipLabel, subjectsLabel]
+        [avatarContainer, nameLabel, idLabel, ageLabel, gradeLabel, scholarshipLabel, subjectsTitleLabel, subjectsStack]
             .forEach(contentStack.addArrangedSubview)
 
         scrollView.snp.makeConstraints { $0.edges.equalToSuperview() }
@@ -96,9 +105,46 @@ final class StudentDetailView: UIView {
         ageLabel.text = "Age: \(student.age)"
         gradeLabel.text = String(format: "Average grade: %.1f", student.averageGrade)
         scholarshipLabel.text = "Scholarship holder: \(student.isScholarshipHolder ? "Yes" : "No")"
-        subjectsLabel.text = student.subjects.isEmpty
-            ? "Subjects: none"
-            : "Subjects: " + student.subjects.joined(separator: ", ")
-        // Milestone 3 replaces the subjects label with tappable subject buttons.
+        subjectsTitleLabel.text = student.subjects.isEmpty ? "Subjects: none" : "Subjects:"
+        setSubjects(student.subjects)
+    }
+
+    private func setSubjects(_ subjects: [String]) {
+        subjectsStack.arrangedSubviews.forEach {
+            subjectsStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        for subject in subjects {
+            subjectsStack.addArrangedSubview(makeSubjectButton(subject))
+        }
+    }
+
+    private func makeSubjectButton(_ subject: String) -> UIButton {
+        var configuration = UIButton.Configuration.plain()
+        configuration.title = subject
+        configuration.baseForegroundColor = UIColor(red: 0.59375, green: 0.3125, blue: 0.4453125, alpha: 1.0)
+        configuration.image = UIImage(
+            systemName: "circle.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 6)
+        )
+        configuration.imagePlacement = .leading
+        configuration.imagePadding = 10
+        configuration.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 12)
+        configuration.titleLineBreakMode = .byWordWrapping
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attributes in
+            var attributes = attributes
+            attributes.font = StudentDetailView.font(for: .body)
+            return attributes
+        }
+
+        let button = UIButton(configuration: configuration)
+        button.contentHorizontalAlignment = .leading
+        button.accessibilityIdentifier = "subjectButton.\(subject)"
+        button.accessibilityLabel = "Subject \(subject)"
+        button.accessibilityHint = "Shows students who take this subject"
+        button.addAction(UIAction { [weak self] _ in
+            self?.onSubjectTap?(subject)
+        }, for: .touchUpInside)
+        return button
     }
 }

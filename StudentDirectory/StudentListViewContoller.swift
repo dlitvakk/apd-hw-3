@@ -3,12 +3,14 @@ import SnapKit
 
 final class StudentListViewController: UIViewController {
     private let store: StudentStore
+    private let subject: String?
     private let listView = StudentListView()
 
-    init(store: StudentStore) {
+    init(store: StudentStore, subject: String? = nil) {
         self.store = store
+        self.subject = subject
         super.init(nibName: nil, bundle: nil)
-        title = "Students"
+        title = subject ?? "Students"
     }
 
     required init?(coder: NSCoder) {
@@ -20,7 +22,7 @@ final class StudentListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         view.addSubview(listView)
         listView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
-        
+
         listView.onSelect = { [weak self] student in
             guard let self else { return }
             let detail = StudentDetailViewController(store: self.store, studentID: student.id)
@@ -30,7 +32,11 @@ final class StudentListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        listView.students = store.students
+        if let subject {
+            listView.students = store.students(matchingSubject: subject)
+        } else {
+            listView.students = store.students
+        }
     }
 }
 

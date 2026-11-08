@@ -22,6 +22,12 @@ final class StudentDetailViewController: UIViewController {
         navigationItem.largeTitleDisplayMode = .never
         view.addSubview(detailView)
         detailView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
+
+        detailView.onSubjectTap = { [weak self] subject in
+            guard let self else { return }
+            let filtered = StudentListViewController(store: self.store, subject: subject)
+            self.navigationController?.pushViewController(filtered, animated: true)
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
